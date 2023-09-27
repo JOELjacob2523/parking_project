@@ -1,5 +1,7 @@
-const Router = require("express").Router();
-const e = require("express");
+const express = require("express");
+const SARouter = require("express").Router();
+const path = require("path");
+
 const {
   createUser,
   createCondo,
@@ -20,8 +22,11 @@ const {
 
 const { createUnitList } = require("../Utilities/superAdminUtilites");
 
+const superAdminBuildPath = path.join(__dirname, "../super-admin-portal/build");
+SARouter.use("/", express.static(superAdminBuildPath));
+
 // & create user
-Router.post("/create/user", async (req, res) => {
+SARouter.post("/create/user", async (req, res) => {
   /**
    * ~ required fields ~
    * ^ username
@@ -40,7 +45,7 @@ Router.post("/create/user", async (req, res) => {
 });
 
 // & create condo
-Router.post("/create/condo", async (req, res) => {
+SARouter.post("/create/condo", async (req, res) => {
   /**
    * ~ required fields ~
    * ^ condo_admin_id
@@ -58,7 +63,7 @@ Router.post("/create/condo", async (req, res) => {
 });
 
 // & create lot
-Router.post("/create/lot", async (req, res) => {
+SARouter.post("/create/lot", async (req, res) => {
   /**
    * ~ required fields ~
    * ^ condo_id
@@ -75,7 +80,7 @@ Router.post("/create/lot", async (req, res) => {
 });
 
 // & 2 options 1) create unit 2) create units list
-Router.post("/create/units/:condoId", async (req, res) => {
+SARouter.post("/create/units/:condoId", async (req, res) => {
   /**
    * ~ required fields ~
    * ^ condo_id
@@ -100,7 +105,7 @@ Router.post("/create/units/:condoId", async (req, res) => {
 });
 
 // & create camera
-Router.post("/create/camera", async (req, res) => {
+SARouter.post("/create/camera", async (req, res) => {
   /**
    * ~ required fields ~
    *  ^ Data_source_camera_id
@@ -116,7 +121,7 @@ Router.post("/create/camera", async (req, res) => {
 });
 
 // & 2 options 1) get all condos 2) get condo by id
-Router.get("/get/condos/:id?", async (req, res) => {
+SARouter.get("/get/condos/:id?", async (req, res) => {
   try {
     let condos;
     if (req.params.id) {
@@ -132,7 +137,7 @@ Router.get("/get/condos/:id?", async (req, res) => {
 });
 
 // & get all lots by condo id
-Router.get("/get/lots/:condoId", async (req, res) => {
+SARouter.get("/get/lots/:condoId", async (req, res) => {
   try {
     const lots = await getLotsByCondoId(req.params.condoId);
     res.json(lots).status(200);
@@ -143,7 +148,7 @@ Router.get("/get/lots/:condoId", async (req, res) => {
 });
 
 // & get lot by id
-Router.get("/get/lot/:lotId", async (req, res) => {
+SARouter.get("/get/lot/:lotId", async (req, res) => {
   try {
     const lot = await getLotById(req.params.lotId);
     res.json(lot).status(200);
@@ -154,7 +159,7 @@ Router.get("/get/lot/:lotId", async (req, res) => {
 });
 
 // & get all users
-Router.get("/get/users", async (req, res) => {
+SARouter.get("/get/users", async (req, res) => {
   try {
     const users = await getUsers();
     res.json(users).status(200);
@@ -165,7 +170,7 @@ Router.get("/get/users", async (req, res) => {
 });
 
 // & get user by id
-Router.get("/get/user/:userId", async (req, res) => {
+SARouter.get("/get/user/:userId", async (req, res) => {
   try {
     const user = await getUserById(req.params.userId);
     res.json(user).status(200);
@@ -176,7 +181,7 @@ Router.get("/get/user/:userId", async (req, res) => {
 });
 
 // & get all users by condo id
-Router.get("/get/usersByCondo/:condoId", async (req, res) => {
+SARouter.get("/get/usersByCondo/:condoId", async (req, res) => {
   try {
     const users = await getCondoUsers(req.params.condoId);
     res.json(users).status(200).end();
@@ -186,12 +191,12 @@ Router.get("/get/usersByCondo/:condoId", async (req, res) => {
   }
 });
 
-/* 
-* & 2 options 1) get all logs
-* & 2) get logs by condo id (archive)
-* & 3) get logs by condo id (not archive)
-*/
-Router.get("/get/logs/:condoId?", async (req, res) => {
+/*
+ * & 2 options 1) get all logs
+ * & 2) get logs by condo id (archive)
+ * & 3) get logs by condo id (not archive)
+ */
+SARouter.get("/get/logs/:condoId?", async (req, res) => {
   try {
     const archive = req.query.archive;
     const condoId = req.params.condoId;
@@ -213,4 +218,4 @@ Router.get("/get/logs/:condoId?", async (req, res) => {
   }
 });
 
-module.exports = Router;
+module.exports = SARouter;

@@ -1,7 +1,12 @@
-const Router = require("express").Router();
+const express = require("express");
+const condoAdminRouter = require("express").Router();
+const path = require("path");
 const { getCondoByAdminId } = require("../controllers/condoAdminQueries");
 
-Router.get("/get/condos", async (req, res) => {
+const condoAdminBuildPath = path.join(__dirname, "../condo-admin-portal/build");
+condoAdminRouter.use("/", express.static(condoAdminBuildPath));
+
+condoAdminRouter.get("/get/condos", async (req, res) => {
   try {
     const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
     let condos = await getCondoByAdminId(adminId);
@@ -12,4 +17,4 @@ Router.get("/get/condos", async (req, res) => {
   }
 });
 
-module.exports = Router;
+module.exports = condoAdminRouter;

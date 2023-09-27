@@ -1,4 +1,6 @@
-const Router = require("express").Router();
+const express = require("express");
+const UserRouter = require("express").Router();
+const path = require("path");
 const {
   getUserProfile,
   getUnitsOfUserWithCondoInfo,
@@ -6,7 +8,10 @@ const {
   updateUnitPlateList,
 } = require("../controllers/userQueries");
 
-Router.get("/get/profile", async (req, res) => {
+const userBuildPath = path.join(__dirname, "../user-portal/build");
+UserRouter.use("/", express.static(userBuildPath));
+
+UserRouter.get("/get/profile", async (req, res) => {
   try {
     const userId = req.query.userId ? req.query.userId : 1; // TODO: remove this line
     const user = await getUserProfile(userId);
@@ -17,7 +22,7 @@ Router.get("/get/profile", async (req, res) => {
   }
 });
 
-Router.get("/get/units", async (req, res) => {
+UserRouter.get("/get/units", async (req, res) => {
   try {
     const userId = req.query.userId ? req.query.userId : 1; // TODO: remove this line
     const units = await getUnitsOfUserWithCondoInfo(userId);
@@ -28,7 +33,7 @@ Router.get("/get/units", async (req, res) => {
   }
 });
 
-Router.put("/update/profile", async (req, res) => {
+UserRouter.put("/update/profile", async (req, res) => {
   try {
     const userId = req.query.userId ? req.query.userId : 1; // TODO: remove this line
     const user = req.body;
@@ -40,7 +45,7 @@ Router.put("/update/profile", async (req, res) => {
   }
 });
 
-Router.put("/update/plateList/:unitId", async (req, res) => {
+UserRouter.put("/update/plateList/:unitId", async (req, res) => {
   try {
     const plateList = req.body;
     const unitId = Number(req.params.unitId);
@@ -53,4 +58,4 @@ Router.put("/update/plateList/:unitId", async (req, res) => {
   }
 });
 
-module.exports = Router;
+module.exports = UserRouter;
