@@ -1,14 +1,23 @@
-const Routes = require("express").Router();
-const webhookHendler  = require("../Utilities/webhookHendler");
+import express from "express";
+import WebhookUtilities from "../Utilities/WebhookUtilities.js";
 
-Routes.post("/", async (req, res) => {
-  try {
-    const log = req.body;await webhookHendler(log);
-    res.sendStatus(200);
-  } catch (error) {
-    console.log(error);
-    res.sendStatus(500);
+class WebhookRoutes {
+  constructor() {
+    this.router = express.Router();
+    this.WebhookUtilities = new WebhookUtilities();
+    this.router.post("/", this.webhookHandler.bind(this));
   }
-});
 
-module.exports = Routes;
+  async webhookHandler(req, res) {
+    try {
+      const log = req.body;
+      await this.WebhookUtilities(log);
+      res.sendStatus(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+}
+
+export default WebhookRoutes;

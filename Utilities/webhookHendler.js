@@ -1,10 +1,11 @@
-const {
-  seeIfCarIsAllowed,
-  getLogForPlateIfExistsInLogs,
-  deleteLog,
-  insertCameraLog,
-  setLogAsArchive,
-} = require("../controllers/webhookQueries");
+import WebhookQueries from "../oop-controllers/webhookQueries";
+// import {
+//   seeIfCarIsAllowed,
+//   getLogForPlateIfExistsInLogs,
+//   deleteLog,
+//   insertCameraLog,
+//   setLogAsArchive,
+// } from "../oop-controllers/webhookQueries";
 
 /**
  * This function is used to handle the camera logs
@@ -89,7 +90,6 @@ function formatReqBodyCamLogs(reqBod) {
     direction: direction,
   };
 }
-
 
 /**
  * This function is used to set the direction of travel

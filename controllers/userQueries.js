@@ -1,34 +1,42 @@
-const { knex } = require("./db");
+import Database from "./db.js";
 
-module.exports = {
-  getUserProfile,
-  getUnitsOfUserWithCondoInfo,
-  updateUserProfile,
-  updateUnitPlateList,
-};
+class UserQueries {
+  constructor() {
+    this.db = new Database();
+  }
 
-async function getUserProfile(userId) {
-  return await knex("users").select("*").where({ user_id: userId });
-}
+  async getUserProfile(userId) {
+    return await this.db.knex("users").select("*").where({ user_id: userId });
+  }
 
-async function getUnitsOfUserWithCondoInfo(userId) {
-  return await knex("units")
-    .select("*")
-    .join("condos", "units.condo_id", "=", "condos.condo_id")
-    .where({ user_id: userId });
-}
+  async getUnitsOfUser(userId) {
+    return await this.db.knex("units")
+      .select("unit_id", "address", "condo_id", "max_cars")
+      .where({ user_id: userId });
+  }
 
-async function updateUserProfile(userId, user) {
-  console.log(user);
-  const updateDate = new Date();
-  user.last_update = updateDate;
-  console.log(user);
-  return await knex("users").where({ user_id: userId }).update(user);
-}
+  async getUnitAddressCarListAndMaxCars(unitid) {
+    return await this.db.knex("units")
+      .select("unit_id", "address", "car_list", "max_cars")
+      .where({ unit_id: unitid });
+  }
 
-async function updateUnitPlateList(unitId, plateList) {
+  async updateUserProfile(userId, user) {
+    console.log(user);
+    const updateDate = new Date();
+    user.last_update = updateDate;
+    console.log(user);
+    return await this.db.knex("users").where({ user_id: userId }).update(user);
+  }
+
+  async updateUnitPlateList(unitId, plateList) {
+    console.log(plateList);
     const list = JSON.stringify(plateList);
-  return await knex("units")
-    .where({ unit_id: unitId })
-    .update({ car_list: list });
+    console.log(list);
+    return await this.db.knex("units")
+      .where({ unit_id: unitId })
+      .update({ car_list: list });
+  }
 }
+
+export default UserQueries;

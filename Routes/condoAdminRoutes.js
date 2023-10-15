@@ -1,20 +1,24 @@
-const express = require("express");
-const condoAdminRouter = require("express").Router();
-const path = require("path");
-const { getCondoByAdminId } = require("../controllers/condoAdminQueries");
+import express from "express";
+import CondoAdminQueries from "../controllers/condoAdminQueries.js";
 
-const condoAdminBuildPath = path.join(__dirname, "../condo-admin-portal/build");
-condoAdminRouter.use("/", express.static(condoAdminBuildPath));
+class CondoAdminRoutes {
+  constructor() {
+    this.router = express.Router();
+    this.condoAdminQueries = new CondoAdminQueries();
 
-condoAdminRouter.get("/get/condos", async (req, res) => {
-  try {
-    const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
-    let condos = await getCondoByAdminId(adminId);
-    res.json(condos).status(200);
-  } catch (error) {
-    console.log(error);
-    res.sendStatus(500);
+    this.router.get("/get/condos", this.getCondoByAdminId.bind(this));
   }
-});
 
-module.exports = condoAdminRouter;
+  async getCondoByAdminId(req, res) {
+    try {
+      const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
+      let condos = await this.condoAdminQueries.getCondoByAdminId(adminId);
+      res.json(condos).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+}
+
+export default CondoAdminRoutes;

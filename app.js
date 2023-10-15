@@ -1,16 +1,22 @@
-const express = require("express");
+import express, { json, urlencoded } from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import WebhookRoutes from "./routes/WebhookRoutes.js";
+import SuperAdminRoutes from "./routes/SuperAdminRoutes.js";
+import CondoAdminRoutes from "./routes/CondoAdminRoutes.js";
+import UserRoutes from "./routes/UserRoutes.js";
+
 const app = express();
-require("dotenv").config();
+dotenv.config();
 const port = process.env.PORT || 3000;
-const cors = require("cors");
-const webhookRoutes = require("./Routes/webhookRoutes");
-const superAdminRoutes = require("./Routes/superAdminRoutes");
-const condoAdminRoutes = require("./Routes/condoAdminRoutes");
-const userRoutes = require("./Routes/userRoutes");
+const webhookRoutes = new WebhookRoutes().router;
+const superAdminRoutes = new SuperAdminRoutes().router;
+const condoAdminRoutes = new CondoAdminRoutes().router;
+const userRoutes = new UserRoutes().router;
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(json());
+app.use(urlencoded({ extended: true }));
 app.use("/webhook", webhookRoutes);
 app.use("/superAdmin", superAdminRoutes);
 app.use("/condoAdmin", condoAdminRoutes);
