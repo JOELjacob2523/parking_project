@@ -7,7 +7,7 @@ class WebhookUtilities {
 
   async handelCameraLog(log) {
     try {
-      const formattedLog = this.formatReqBodyCamLogs(log);
+      const formattedLog = this.#formatReqBodyCamLogs(log);
       const isAllowed = await this.webhookQueries.seeIfCarIsAllowed(
         formattedLog.plate_number,
         formattedLog.data_source_cam_id
@@ -48,7 +48,7 @@ class WebhookUtilities {
     }
   }
 
-  async formatReqBodyCamLogs(reqBod) {
+  async #formatReqBodyCamLogs(reqBod) {
     const {
       camera_id,
       epoch_start,
@@ -60,7 +60,10 @@ class WebhookUtilities {
     } = reqBod;
     const { plate, plate_crop_jpeg } = best_plate;
     const { color, make, make_model, body_type, year } = vehicle;
-    let direction = this.setDirection(direction_of_travel_id, travel_direction);
+    let direction = this.#setDirection(
+      direction_of_travel_id,
+      travel_direction
+    );
     console.log("direction", direction);
     console.log("cam id", camera_id);
     console.log("plate", plate);
@@ -80,7 +83,7 @@ class WebhookUtilities {
     };
   }
 
-  async setDirection(direction_of_travel_id, travel_direction) {
+  async #setDirection(direction_of_travel_id, travel_direction) {
     if (direction_of_travel_id == 0) {
       return "In";
     } else if (direction_of_travel_id == 1) {

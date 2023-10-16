@@ -5,20 +5,20 @@ class UserRoutes {
   constructor() {
     this.router = express.Router();
     this.userQueries = new UserQueries();
-    this.router.get("/get/profile", this.getUserProfile.bind(this));
-    this.router.get("/get/units", this.getUnitsOfUser.bind(this));
+    this.router.get("/get/profile", this.#getUserProfile.bind(this));
+    this.router.get("/get/units", this.#getUnitsOfUser.bind(this));
     this.router.get(
       "/get/units/cars/:unitId",
-      this.getUnitAddressCarListAndMaxCars.bind(this)
+      this.#getUnitAddressCarListAndMaxCars.bind(this)
     );
-    this.router.put("/update/profile", this.updateUserProfile.bind(this));
+    this.router.put("/update/profile", this.#updateUserProfile.bind(this));
     this.router.put(
       "/update/plateList/:unitId",
-      this.updateUnitPlateList.bind(this)
+      this.#updateUnitPlateList.bind(this)
     );
   }
 
-  async getUserProfile(req, res) {
+  async #getUserProfile(req, res) {
     try {
       const userId = req.query.userId ? req.query.userId : 1; // TODO: remove this line
       const user = await this.userQueries.getUserProfile(userId);
@@ -29,7 +29,7 @@ class UserRoutes {
     }
   }
 
-  async getUnitsOfUser(req, res) {
+  async #getUnitsOfUser(req, res) {
     try {
       const userId = req.params.unitId ? req.params.unitId : 1; // TODO: remove this line
 
@@ -41,7 +41,7 @@ class UserRoutes {
     }
   }
 
-  async getUnitAddressCarListAndMaxCars(req, res) {
+  async #getUnitAddressCarListAndMaxCars(req, res) {
     try {
       const { unitId } = req.params;
       const units = await this.userQueries.getUnitAddressCarListAndMaxCars(
@@ -54,7 +54,7 @@ class UserRoutes {
     }
   }
 
-  async updateUserProfile(req, res) {
+  async #updateUserProfile(req, res) {
     try {
       const userId = req.query.userId ? req.query.userId : 1; // TODO: remove this line
       const user = req.body;
@@ -66,7 +66,7 @@ class UserRoutes {
     }
   }
 
-  async updateUnitPlateList(req, res) {
+  async #updateUnitPlateList(req, res) {
     console.log("update plate list");
     try {
       const plateList = req.body;
