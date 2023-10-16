@@ -1,6 +1,27 @@
-# Project Name
+# Parking Project
 
 Short description of the project.
+
+## Table of Contents
+
+- [About](#about)
+- [Getting Started](#getting-started)
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Database](#database)
+- [Usage](#usage)
+- [Environment Variables](#environment-variables)
+- [Contributing](#contributing)
+- [License](#license)
+
+## About
+
+Long description of the project.
+
+This project is not open source and is intended for private use only. Unauthorized distribution, reproduction, or modification of this software is strictly prohibited.
+This is A Node.js server for the Parking Project.
+It Serves as a REST API for the Multi-Platform Parking Project.
+It is built using the Express.js framework.
 
 ## Getting Started
 
@@ -11,9 +32,27 @@ Short description of the project.
 
 ### Installation
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Start the server: `npm start`
+Installation is done using the
+[`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
+
+```console
+$ git clone https://github.com/Yishei/parking_project.git
+$ cd parking_project
+$ npm install
+$ npm start
+```
+
+### Database
+
+- MySQL
+
+## Features
+
+* Handles `Webhooks` from the OpenALPR Cloud API
+* Handles `Super Admin` requests For the Super Admin Portal
+* Handles `Condo Admin` requests For the Condo Admin Portal
+* Handles `User` requests For the User Portal
+* Handles `Towing` requests For the Towing Portal
 
 ### Usage
 
@@ -25,6 +64,10 @@ Short description of the project.
 ### Environment Variables
 
 - `PORT`: Port number for the server to listen on
+- `DB_HOST`: Database host
+- `DB_USER`: Database user
+- `DB_PASSWORD`: Database password
+- `DB_NAME`: Database name
 
 ### Contributing
 
