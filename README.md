@@ -37,8 +37,24 @@ Installation is done using the
 
 ```console
 $ git clone https://github.com/Yishei/parking_project.git
+```
+
+Then change directory to the project folder:
+
+```
 $ cd parking_project
+```
+
+Then install dependencies:
+
+```
 $ npm install
+```
+
+Then start the server:
+
+```
+
 $ npm start
 ```
 
@@ -48,11 +64,11 @@ $ npm start
 
 ## Features
 
-* Handles `Webhooks` from the OpenALPR Cloud API
-* Handles `Super Admin` requests For the Super Admin Portal
-* Handles `Condo Admin` requests For the Condo Admin Portal
-* Handles `User` requests For the User Portal
-* Handles `Towing` requests For the Towing Portal
+- Handles `Webhooks` from the OpenALPR Cloud API
+- Handles `Super Admin` requests For the Super Admin Portal
+- Handles `Condo Admin` requests For the Condo Admin Portal
+- Handles `User` requests For the User Portal
+- Handles `Towing` requests For the Towing Portal
 
 ### Usage
 
