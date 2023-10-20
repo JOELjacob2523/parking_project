@@ -36,26 +36,26 @@ Installation is done using the
 [`npm install` command](https://docs.npmjs.com/getting-started/installing-npm-packages-locally):
 
 ```console
-$ git clone https://github.com/Yishei/parking_project.git
+git clone https://github.com/Yishei/parking_project.git
 ```
 
 Then change directory to the project folder:
 
 ```
-$ cd parking_project
+cd parking_project
 ```
 
 Then install dependencies:
 
 ```
-$ npm install
+npm install
 ```
 
 Then start the server:
 
 ```
 
-$ npm start
+npm start
 ```
 
 ### Database

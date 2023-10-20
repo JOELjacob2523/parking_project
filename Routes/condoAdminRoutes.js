@@ -11,17 +11,24 @@ class CondoAdminRoutes {
       "/get/lots/:condoId",
       this.getLotsByCondoIdHandler.bind(this)
     );
+    this.router.get("/get/cameras/:lotId", this.getCamerasByLotId.bind(this));
     this.router.get(
       "/get/logs/:condoId",
-      this.getLotByCondoIdHandler.bind(this)
+      this.getLogsByCondoIdHandler.bind(this)
     );
     this.router.get(
       "/get/units/:condoId",
       this.getUnitsByCondoIdHandler.bind(this)
     );
+    this.router.get(
+      "/get/users/:condoId",
+      this.getUsersByCondoIdHandler.bind(this)
+    );
+    this.router.get("/get/towing/:condoId", this.getTowing.bind(this));
   }
 
   async getCondoByAdminId(req, res) {
+    console.log("getCondoByAdminId", "from condoAdminRoutes.js getCondoByAdminId");
     try {
       const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
       let condos = await this.condoAdminQueries.getCondoByAdminId(adminId);
@@ -44,7 +51,19 @@ class CondoAdminRoutes {
     }
   }
 
-  async getLotByCondoIdHandler(req, res) {
+  async getCamerasByLotId(req, res) {
+    try {
+      const cameras = await this.condoAdminQueries.getCamerasByLotId(
+        req.params.lotId
+      );
+      res.json(cameras).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async getLogsByCondoIdHandler(req, res) {
     try {
       const archive = req.query.archive;
       const condoId = req.params.condoId;
@@ -75,6 +94,31 @@ class CondoAdminRoutes {
         req.params.condoId
       );
       res.json(units).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async getUsersByCondoIdHandler(req, res) {
+    try {
+      const users = await this.condoAdminQueries.getUsersByCondoId(
+        req.params.condoId
+      );
+      res.json(users).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async getTowing(req, res) {
+    console.log(req.params, "from condoAdminRoutes.js getTowing")
+    try {
+      const towing = await this.condoAdminQueries.getTowingDriverByCondoId(
+        req.params.condoId
+      );
+      res.json(towing).status(200);
     } catch (error) {
       console.log(error);
       res.sendStatus(500);

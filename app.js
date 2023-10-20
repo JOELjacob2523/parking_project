@@ -1,27 +1,51 @@
 import express, { json, urlencoded } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 import WebhookRoutes from "./routes/WebhookRoutes.js";
 import SuperAdminRoutes from "./routes/SuperAdminRoutes.js";
 import CondoAdminRoutes from "./routes/CondoAdminRoutes.js";
 import UserRoutes from "./routes/UserRoutes.js";
 
-const app = express();
 dotenv.config();
-const port = process.env.PORT || 3000;
-const webhookRoutes = new WebhookRoutes().router;
-const superAdminRoutes = new SuperAdminRoutes().router;
-const condoAdminRoutes = new CondoAdminRoutes().router;
-const userRoutes = new UserRoutes().router;
 
-app.use(cors());
-app.use(json());
-app.use(urlencoded({ extended: true }));
-app.use("/webhook", webhookRoutes);
-app.use("/superAdmin", superAdminRoutes);
-app.use("/condoAdmin", condoAdminRoutes);
-app.use("/user", userRoutes);
+class App {
+  constructor() {
+    this.app = express();
+    this.port = process.env.PORT || 3000;
+    this.webhookRoutes = new WebhookRoutes().router;
+    this.superAdminRoutes = new SuperAdminRoutes().router;
+    this.condoAdminRoutes = new CondoAdminRoutes().router;
+    this.userRoutes = new UserRoutes().router;
+    this.__dirname = dirname(fileURLToPath(import.meta.url));
+  }
 
-app.listen(port, () => {
-  console.log(`server listening at http://localhost:${port}`);
-});
+  start() {
+    this.app.use(cors());
+    this.app.use(json());
+    this.app.use(urlencoded({ extended: true }));
+    this.app.use("/webhook", this.webhookRoutes);
+    this.app.use("/superAdmin", this.superAdminRoutes);
+    this.app.use("/condoAdmin", this.condoAdminRoutes);
+    this.app.use("/user", this.userRoutes);
+    this.app.use(
+      "/app",
+      express.static(path.join(this.__dirname, "parking-client/build"))
+    );
+
+    this.app.get("/app*", (req, res) => {
+      res.sendFile(
+        path.join(this.__dirname, "parking-client/build", "index.html")
+      );
+    });
+
+    this.app.listen(this.port, () => {
+      console.log(`server listening at http://localhost:${this.port}`);
+    });
+  }
+}
+
+const app = new App();
+
+app.start();
