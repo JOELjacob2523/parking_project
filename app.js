@@ -34,6 +34,10 @@ class App {
       express.static(path.join(this.__dirname, "parking-client/build"))
     );
 
+    this.app.get("/", (req, res) => {
+      res.redirect("/app");
+    });
+
     this.app.get("/app*", (req, res) => {
       res.sendFile(
         path.join(this.__dirname, "parking-client/build", "index.html")
@@ -42,6 +46,7 @@ class App {
 
     this.app.listen(this.port, () => {
       console.log(`server listening at http://localhost:${this.port}`);
+      console.log(`WebSite is on http://localhost:${this.port}/app`)
     });
   }
 }
