@@ -7,45 +7,68 @@ class WebhookUtilities {
 
   async handelCameraLog(log) {
     try {
-      const formattedLog = this.#formatReqBodyCamLogs(log);
-      const isAllowed = await this.webhookQueries.seeIfCarIsAllowed(
+      const formattedLog = await this.#formatReqBodyCamLogs(log);
+      const isAllowed = await this.#seeIfCarIsAllowed(
         formattedLog.plate_number,
         formattedLog.data_source_cam_id
       );
+      //? if allowed insert log as archive
       if (isAllowed) {
-        formattedLog.archive = true;
-        this.webhookQueries.insertCameraLog(formattedLog);
+        await this.#insertLogAsArchive(formattedLog);
         return;
       }
-      const duplicateLog =
-        await this.webhookQueries.getLogForPlateIfExistsInLogs(
-          formattedLog.plate_number
-        );
+      //? if not allowed see if car is in logs
+      const duplicateLog = await this.webhookQueries.getDuplicateLogNotArchived(
+        formattedLog.plate_number
+      );
+      //? if car is in logs
       if (duplicateLog.length > 0) {
+        //? if current log is in delete the duplicate log and insert the current log
         if (formattedLog.direction == "In") {
           this.webhookQueries.deleteLog(duplicateLog[0].log_id);
           this.webhookQueries.insertCameraLog(formattedLog);
           return;
-        } else {
-          this.webhookQueries.setLogAsArchive(duplicateLog[0].log_id);
-          formattedLog.archive = true;
-          this.webhookQueries.insertCameraLog(formattedLog);
         }
-      } else {
-        if (formattedLog.direction == "In") {
-          this.webhookQueries.insertCameraLog(formattedLog);
-          return;
-        } else {
-          console.log(
-            "ALERT a care that didn't enter when out or no direction specified"
-          );
+        //? if current log is out set logs as archive and insert the current log
+        else if (formattedLog.direction == "Out") {
+          this.webhookQueries.setLogAsArchive(duplicateLog[0].log_id);
+          this.#insertLogAsArchive(formattedLog);
           return;
         }
       }
+      //? if car is not in logs and Not Allowed insert the current log if it is in insert log
+      if (formattedLog.direction == "In") {
+        this.webhookQueries.insertCameraLog(formattedLog);
+        return;
+      }
+      //? if car is not in logs and direction is out
+      //? or direction is not In or Outdo nothing and alert
+      console.error(
+        "ALERT a care that didn't enter when out or no direction specified"
+      );
+      return;
     } catch (error) {
-      console.trace(error);
+      console.error(error);
       throw new Error(error);
     }
+  }
+
+  async #insertLogAsArchive(log) {
+    log.archive = true;
+    await this.webhookQueries.insertCameraLog(log);
+  }
+
+  async #seeIfCarIsAllowed(plateNumber, camId) {
+    const camIdList = await this.webhookQueries.getDataSourcesIdForAllowedCar(
+      camId,
+      plateNumber
+    );
+    if (camIdList.length > 0) {
+      console.log("Car is allowed");
+      return true;
+    }
+    console.log("Car is not allowed");
+    return false;
   }
 
   async #formatReqBodyCamLogs(reqBod) {
@@ -64,9 +87,6 @@ class WebhookUtilities {
       direction_of_travel_id,
       travel_direction
     );
-    console.log("direction", direction);
-    console.log("cam id", camera_id);
-    console.log("plate", plate);
 
     return {
       data_source_cam_id: camera_id,
@@ -83,7 +103,7 @@ class WebhookUtilities {
     };
   }
 
-  async #setDirection(direction_of_travel_id, travel_direction) {
+  #setDirection(direction_of_travel_id, travel_direction) {
     if (direction_of_travel_id == 0) {
       return "In";
     } else if (direction_of_travel_id == 1) {

@@ -1,4 +1,3 @@
-import { json } from "express";
 import Database from "./db.js";
 
 class CondoAdminQueries {

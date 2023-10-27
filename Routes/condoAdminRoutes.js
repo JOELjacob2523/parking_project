@@ -12,13 +12,12 @@ class CondoAdminRoutes {
       this.getLotsByCondoIdHandler.bind(this)
     );
     this.router.get("/get/cameras/:lotId", this.getCamerasByLotId.bind(this));
-    // this.router.get(
-    //   "/get/logs/:condoId",
-    //   this.getLogsByCondoIdHandler.bind(this)
-    // );
 
     this.router.get("/get/logs/:lotId", this.getLogsByLotIdHandler.bind(this));
-    this.router.get("/get/log/img/:logId", this.getImgByLogIdHandler.bind(this));
+    this.router.get(
+      "/get/log/img/:logId",
+      this.getImgByLogIdHandler.bind(this)
+    );
     this.router.get(
       "/get/units/:condoId",
       this.getUnitsByCondoIdHandler.bind(this)
@@ -142,6 +141,7 @@ class CondoAdminRoutes {
       const units = await this.condoAdminQueries.getUnitsByCondoId(
         req.params.condoId
       );
+      console.log(units);
       res.json(units).status(200);
     } catch (error) {
       console.log(error);
@@ -209,8 +209,12 @@ class CondoAdminRoutes {
       );
       res.json(result).status(200);
     } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
+      if (error.code == "ER_DUP_ENTRY") {
+        res.status(409).json({ error: error.code });
+      } else {
+        console.log(error);
+        res.sendStatus(500);
+      }
     }
   }
 
@@ -244,10 +248,10 @@ class CondoAdminRoutes {
   async updateUnitHandler(req, res) {
     try {
       const unitId = req.params.unitId;
-      const carArr = { list: [] };
+      const carArr = [];
       for (const key in req.body) {
         if (key.startsWith("car_list")) {
-          carArr.list.push(req.body[key]);
+          carArr.push(req.body[key]);
           delete req.body[key];
         }
       }

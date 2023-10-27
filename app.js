@@ -29,6 +29,7 @@ class App {
     this.app.use("/superAdmin", this.superAdminRoutes);
     this.app.use("/condoAdmin", this.condoAdminRoutes);
     this.app.use("/user", this.userRoutes);
+
     this.app.use(
       "/app",
       express.static(path.join(this.__dirname, "parking-client/build"))
@@ -46,7 +47,7 @@ class App {
 
     this.app.listen(this.port, () => {
       console.log(`server listening at http://localhost:${this.port}`);
-      console.log(`WebSite is on http://localhost:${this.port}/app`)
+      console.log(`WebSite is on http://localhost:${this.port}/app`);
     });
   }
 }

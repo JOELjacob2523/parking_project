@@ -11,7 +11,7 @@ class WebhookRoutes {
   async webhookHandler(req, res) {
     try {
       const log = req.body;
-      await this.WebhookUtilities(log);
+      await this.WebhookUtilities.handelCameraLog(log);
       res.sendStatus(200);
     } catch (error) {
       console.log(error);
