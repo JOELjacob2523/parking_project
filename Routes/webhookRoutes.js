@@ -1,17 +1,16 @@
 import express from "express";
-import WebhookUtilities from "../Utilities/WebhookUtilities.js";
+import Log from "../modules/Log.js";
 
 class WebhookRoutes {
   constructor() {
     this.router = express.Router();
-    this.WebhookUtilities = new WebhookUtilities();
     this.router.post("/", this.webhookHandler.bind(this));
   }
 
   async webhookHandler(req, res) {
     try {
-      const log = req.body;
-      await this.WebhookUtilities.handelCameraLog(log);
+      const log = new Log(req.body);
+      await log.handelCameraLog();
       res.sendStatus(200);
     } catch (error) {
       console.log(error);

@@ -14,6 +14,7 @@ class Database {
         password: process.env.DB_PASS,
         database: process.env.DB_NAME,
       },
+      pool: { min: 0, max: 7 },
     });
   }
 

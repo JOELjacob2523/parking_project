@@ -1,4 +1,4 @@
-import Database from "./db.js";
+import Database from "../controllers/db.js";
 
 class CondoAdminQueries {
   constructor() {
@@ -126,7 +126,7 @@ class CondoAdminQueries {
       )
       .where("cameras.lot_id", lotId)
       .where("cameralogs.Completion_state", false)
-       .where("cameralogs.archive", false)
+      .where("cameralogs.archive", false)
       .select(
         "cameras.camera_id",
         "cameras.lot_id",

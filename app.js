@@ -11,9 +11,9 @@ import UserRoutes from "./routes/UserRoutes.js";
 dotenv.config();
 
 class App {
-  constructor() {
+  constructor(port) {
+    this.port = port;
     this.app = express();
-    this.port = process.env.PORT || 3000;
     this.webhookRoutes = new WebhookRoutes().router;
     this.superAdminRoutes = new SuperAdminRoutes().router;
     this.condoAdminRoutes = new CondoAdminRoutes().router;
@@ -52,6 +52,4 @@ class App {
   }
 }
 
-const app = new App();
-
-app.start();
+export default App;

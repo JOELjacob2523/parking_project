@@ -1,5 +1,5 @@
 import express from "express";
-import CondoAdminQueries from "../controllers/condoAdminQueries.js";
+import CondoAdminQueries from "../queries/condoAdminQueries.js";
 
 class CondoAdminRoutes {
   constructor() {
