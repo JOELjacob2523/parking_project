@@ -91,6 +91,20 @@ class CondoAdminQueries {
     return arr;
   }
 
+  async CameraExist(id, uptRcId) {
+    console.log("id", id);
+    console.log("uptRcId", uptRcId);
+    let query = this.db.knex("cameras").where("Data_source_camera_id", id);
+
+    if (uptRcId !== undefined) {
+      query = query.whereNot("camera_id", uptRcId);
+    }
+
+    const result = await query.first();
+
+    return result !== undefined;
+  }
+
   async getLogsByCondoId(condoId, archive = true) {
     return await this.db
       .knex("cameralogs")
@@ -148,6 +162,13 @@ class CondoAdminQueries {
       .select("vehicle_pic");
   }
 
+  async getPlateImageForLog(logId) {
+    return await this.db
+      .knex("cameralogs")
+      .where("log_id", logId)
+      .select("plate_pic");
+  }
+
   async getUnitsByCondoId(condoId) {
     return await this.db
       .knex("units")
@@ -184,6 +205,73 @@ class CondoAdminQueries {
 
   async createNewCondo(condo) {
     return await this.db.knex("condos").insert(condo);
+  }
+
+  async createNewLot(lot) {
+    return await this.db.knex("lots").insert(lot);
+  }
+
+  async createNewCamera(camera) {
+    return await this.db.knex("cameras").insert(camera);
+  }
+
+  async deleteCondoById(condoId) {
+    return await this.db.knex.transaction(async (trx) => {
+      // Delete logs through cameras and lots
+      const cameras = await trx("cameras")
+        .join("lots", "cameras.lot_id", "lots.lot_id")
+        .where("lots.condo_id", condoId)
+        .select("cameras.camera_id");
+      for (let camera of cameras) {
+        await trx("cameralogs")
+          .where("data_source_cam_id", camera.Data_source_camera_id)
+          .del();
+      }
+
+      // Delete cameras through lots
+      const lots = await trx("lots")
+        .where("condo_id", condoId)
+        .select("lot_id");
+      for (let lot of lots) {
+        await trx("cameras").where("lot_id", lot.lot_id).del();
+      }
+
+      // Delete units, and lots
+      await trx("units").where("condo_id", condoId).del();
+      await trx("lots").where("condo_id", condoId).del();
+
+      // Delete user that are linded only to this condo Units
+      const usersToDelete = await trx("users")
+        .leftJoin("units", "users.user_id", "units.user_id")
+        .where("units.condo_id", condoId)
+        .select("users.user_id");
+      for (let user of usersToDelete) {
+        await trx("users").where("user_id", user.user_id).del();
+      }
+
+      // Finally, delete the condo
+      await trx("condos").where("condo_id", condoId).del();
+    });
+  }
+
+  async deleteLotById(lotId) {
+    return await this.db.knex.transaction(async (trx) => {
+      // Delete logs through cameras
+      const cameras = await trx("cameras")
+        .where("lot_id", lotId)
+        .select("camera_id");
+      for (let camera of cameras) {
+        await trx("cameralogs")
+          .where("data_source_cam_id", camera.Data_source_camera_id)
+          .del();
+      }
+
+      // Delete cameras
+      await trx("cameras").where("lot_id", lotId).del();
+
+      // Finally, delete the lot
+      await trx("lots").where("lot_id", lotId).del();
+    });
   }
 }
 

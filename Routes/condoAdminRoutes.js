@@ -6,17 +6,21 @@ class CondoAdminRoutes {
     this.router = express.Router();
     this.condoAdminQueries = new CondoAdminQueries();
 
+    // All Get Routes
     this.router.get("/get/condos", this.getCondoByAdminId.bind(this));
     this.router.get(
       "/get/lots/:condoId",
       this.getLotsByCondoIdHandler.bind(this)
     );
     this.router.get("/get/cameras/:lotId", this.getCamerasByLotId.bind(this));
-
     this.router.get("/get/logs/:lotId", this.getLogsByLotIdHandler.bind(this));
     this.router.get(
-      "/get/log/img/:logId",
-      this.getImgByLogIdHandler.bind(this)
+      "/get/log/img/car/:logId",
+      this.getCarImgByLogIdHandler.bind(this)
+    );
+    this.router.get(
+      "/get/log/img/plate/:logId",
+      this.getPlateImgByLogIdHandler.bind(this)
     );
     this.router.get(
       "/get/units/:condoId",
@@ -27,26 +31,36 @@ class CondoAdminRoutes {
       this.getUsersByCondoIdHandler.bind(this)
     );
     this.router.get("/get/towing", this.getTowing.bind(this));
-
     this.router.get("/get/condo/options", this.getCondoOptions.bind(this));
+    this.router.get(
+      "/get/exists/camera",
+      this.getDuplicateCameraIds.bind(this)
+    );
 
+    // All Put Routes
     this.router.put("/update/lot/:lotId", this.updateLotHandler.bind(this));
-
     this.router.put(
       "/update/camera/:cameraId",
       this.updateCameraHandler.bind(this)
     );
-
     this.router.put(
       "/update/condo/:condoId",
       this.updateCondoHandler.bind(this)
     );
-
     this.router.put("/update/user/:userId", this.updateUserHandler.bind(this));
-
     this.router.put("/update/unit/:unitId", this.updateUnitHandler.bind(this));
 
+    // All Post Routes
     this.router.post("/create/condo", this.createCondoHandler.bind(this));
+    this.router.post("/create/lot", this.createLotHandler.bind(this));
+    this.router.post("/create/camera", this.createCameraHandler.bind(this));
+
+    // All Delete Routes
+    this.router.delete(
+      "/delete/condo/:condoId",
+      this.deleteCondoHandler.bind(this)
+    );
+    this.router.delete("/delete/lot/:lotId", this.deleteLotHandler.bind(this));
   }
 
   async getCondoByAdminId(req, res) {
@@ -120,12 +134,27 @@ class CondoAdminRoutes {
     }
   }
 
-  async getImgByLogIdHandler(req, res) {
+  async getCarImgByLogIdHandler(req, res) {
     console.log(req.params.logId);
     try {
       const logId = req.params.logId;
       const imageData = await this.condoAdminQueries.getCarImageForLog(logId);
       const base64Image = Buffer.from(imageData[0].vehicle_pic);
+
+      res.setHeader("Content-Type", "image/jpeg");
+      res.setHeader("Content-Length", imageData.length);
+      res.send(base64Image);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async getPlateImgByLogIdHandler(req, res) {
+    try {
+      const logId = req.params.logId;
+      const imageData = await this.condoAdminQueries.getPlateImageForLog(logId);
+      const base64Image = Buffer.from(imageData[0].plate_pic);
 
       res.setHeader("Content-Type", "image/jpeg");
       res.setHeader("Content-Length", imageData.length);
@@ -187,6 +216,17 @@ class CondoAdminRoutes {
     }
   }
 
+  async getDuplicateCameraIds(req, res) {
+    try {
+    const {camId, uptRcId} = req.query;
+      const exists = await this.condoAdminQueries.CameraExist(camId, uptRcId);
+      res.json(exists).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
   async updateLotHandler(req, res) {
     try {
       const lotId = req.params.lotId;
@@ -209,12 +249,8 @@ class CondoAdminRoutes {
       );
       res.json(result).status(200);
     } catch (error) {
-      if (error.code == "ER_DUP_ENTRY") {
-        res.status(409).json({ error: error.code });
-      } else {
-        console.log(error);
-        res.sendStatus(500);
-      }
+      console.log(error);
+      res.sendStatus(500);
     }
   }
 
@@ -271,6 +307,52 @@ class CondoAdminRoutes {
     try {
       const condo = req.body;
       const result = await this.condoAdminQueries.createNewCondo(condo);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async createLotHandler(req, res) {
+    console.log(req.body);
+    try {
+      const lot = req.body;
+      const result = await this.condoAdminQueries.createNewLot(lot);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async createCameraHandler(req, res) {
+    try {
+      const camera = req.body;
+      const result = await this.condoAdminQueries.createNewCamera(camera);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async deleteCondoHandler(req, res) {
+    try {
+      const condoId = req.params.condoId;
+      console.log(condoId);
+      const result = await this.condoAdminQueries.deleteCondoById(condoId);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async deleteLotHandler(req, res) {
+    try {
+      const lotId = req.params.lotId;
+      const result = await this.condoAdminQueries.deleteLotById(lotId);
       res.json(result).status(200);
     } catch (error) {
       console.log(error);

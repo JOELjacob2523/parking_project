@@ -10,13 +10,11 @@ class Log {
     this.db = new Database();
     this.webhookQueries = new WebhookQueries(this.db);
     this.webhook = webhook;
-    this.log = this.#logFormatter();
+    this.log = this.#formattedLog();
   }
 
   /**
    * This Is the main function of the class
-   * @param {Object} log
-   * @returns Undefined
    */
   async handelCameraLog() {
     try {
@@ -89,7 +87,7 @@ class Log {
    *
    * @returns Object with the necessary data to be inserted into the cameraLogs table
    */
-  #logFormatter() {
+  #formattedLog() {
     return {
       data_source_cam_id: this.webhook.camera_id,
       log_time: new Date(this.webhook.epoch_start),
