@@ -1,27 +1,22 @@
 import express from "express";
 import CondoAdminQueries from "../queries/condoAdminQueries.js";
+import CarHandler from "../modules/CarHandler.js";
+import CAdminAuthMiddleware from "../middleware/CAdminAuthMiddleware.js";
 
 class CondoAdminRoutes {
   constructor() {
     this.router = express.Router();
     this.condoAdminQueries = new CondoAdminQueries();
+    this.carHandler = new CarHandler();
+
+    //Middleware
+    this.router.use(CAdminAuthMiddleware.verifyToken);
 
     // All Get Routes
     this.router.get("/get/condos", this.getCondoByAdminId.bind(this));
-    this.router.get(
-      "/get/lots/:condoId",
-      this.getLotsByCondoIdHandler.bind(this)
-    );
     this.router.get("/get/cameras/:lotId", this.getCamerasByLotId.bind(this));
     this.router.get("/get/logs/:lotId", this.getLogsByLotIdHandler.bind(this));
-    this.router.get(
-      "/get/log/img/car/:logId",
-      this.getCarImgByLogIdHandler.bind(this)
-    );
-    this.router.get(
-      "/get/log/img/plate/:logId",
-      this.getPlateImgByLogIdHandler.bind(this)
-    );
+    this.router.get("/get/cars/:unitId", this.getCarsByUnitId.bind(this));
     this.router.get(
       "/get/units/:condoId",
       this.getUnitsByCondoIdHandler.bind(this)
@@ -30,12 +25,12 @@ class CondoAdminRoutes {
       "/get/users/:condoId",
       this.getUsersByCondoIdHandler.bind(this)
     );
-    this.router.get("/get/towing", this.getTowing.bind(this));
-    this.router.get("/get/condo/options", this.getCondoOptions.bind(this));
     this.router.get(
-      "/get/exists/camera",
-      this.getDuplicateCameraIds.bind(this)
+      "/get/lots/:condoId",
+      this.getLotsByCondoIdHandler.bind(this)
     );
+
+    this.router.get("/get/condo/maxCars/:condoId", this.getMaxCars.bind(this));
 
     // All Put Routes
     this.router.put("/update/lot/:lotId", this.updateLotHandler.bind(this));
@@ -49,11 +44,15 @@ class CondoAdminRoutes {
     );
     this.router.put("/update/user/:userId", this.updateUserHandler.bind(this));
     this.router.put("/update/unit/:unitId", this.updateUnitHandler.bind(this));
+    this.router.put("/update/car/:carId", this.updateCarHandler.bind(this));
 
     // All Post Routes
     this.router.post("/create/condo", this.createCondoHandler.bind(this));
     this.router.post("/create/lot", this.createLotHandler.bind(this));
     this.router.post("/create/camera", this.createCameraHandler.bind(this));
+    this.router.post("/create/user", this.createUserHandler.bind(this));
+    this.router.post("/create/unit", this.createUnitHandler.bind(this));
+    this.router.post("/create/car", this.createCarHandler.bind(this));
 
     // All Delete Routes
     this.router.delete(
@@ -61,6 +60,23 @@ class CondoAdminRoutes {
       this.deleteCondoHandler.bind(this)
     );
     this.router.delete("/delete/lot/:lotId", this.deleteLotHandler.bind(this));
+
+    this.router.delete(
+      "/delete/camera/:cameraId",
+      this.deleteCameraHandler.bind(this)
+    );
+
+    this.router.delete(
+      "/delete/user/:userId",
+      this.deleteUserHandler.bind(this)
+    );
+
+    this.router.delete(
+      "/delete/unit/:unitId",
+      this.deleteUnitHandler.bind(this)
+    );
+
+    this.router.delete("/delete/car/:carId", this.deleteCarHandler.bind(this));
   }
 
   async getCondoByAdminId(req, res) {
@@ -75,6 +91,7 @@ class CondoAdminRoutes {
   }
 
   async getLotsByCondoIdHandler(req, res) {
+    console.log(req.params.condoId);
     try {
       const lots = await this.condoAdminQueries.getLotsByCondoId(
         req.params.condoId
@@ -87,6 +104,7 @@ class CondoAdminRoutes {
   }
 
   async getCamerasByLotId(req, res) {
+    console.log(req.params.lotId);
     try {
       const cameras = await this.condoAdminQueries.getCamerasByLotId(
         req.params.lotId
@@ -134,37 +152,6 @@ class CondoAdminRoutes {
     }
   }
 
-  async getCarImgByLogIdHandler(req, res) {
-    console.log(req.params.logId);
-    try {
-      const logId = req.params.logId;
-      const imageData = await this.condoAdminQueries.getCarImageForLog(logId);
-      const base64Image = Buffer.from(imageData[0].vehicle_pic);
-
-      res.setHeader("Content-Type", "image/jpeg");
-      res.setHeader("Content-Length", imageData.length);
-      res.send(base64Image);
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
-    }
-  }
-
-  async getPlateImgByLogIdHandler(req, res) {
-    try {
-      const logId = req.params.logId;
-      const imageData = await this.condoAdminQueries.getPlateImageForLog(logId);
-      const base64Image = Buffer.from(imageData[0].plate_pic);
-
-      res.setHeader("Content-Type", "image/jpeg");
-      res.setHeader("Content-Length", imageData.length);
-      res.send(base64Image);
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
-    }
-  }
-
   async getUnitsByCondoIdHandler(req, res) {
     try {
       const units = await this.condoAdminQueries.getUnitsByCondoId(
@@ -172,6 +159,19 @@ class CondoAdminRoutes {
       );
       console.log(units);
       res.json(units).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async getCarsByUnitId(req, res) {
+    try {
+      const cars = await this.condoAdminQueries.getCarsByUnitId(
+        req.params.unitId
+      );
+      console.log(cars);
+      res.json(cars).status(200);
     } catch (error) {
       console.log(error);
       res.sendStatus(500);
@@ -190,37 +190,11 @@ class CondoAdminRoutes {
     }
   }
 
-  async getTowing(req, res) {
+  async getMaxCars(req, res) {
     try {
-      const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
-      const towing = await this.condoAdminQueries.getUsersIdNameByCondoId(
-        adminId
-      );
-      res.json(towing).status(200);
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
-    }
-  }
-
-  async getCondoOptions(req, res) {
-    try {
-      const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
-      const condos = await this.condoAdminQueries.getCondoIdAddressByAdminId(
-        adminId
-      );
-      res.json(condos).status(200);
-    } catch (error) {
-      console.log(error);
-      res.sendStatus(500);
-    }
-  }
-
-  async getDuplicateCameraIds(req, res) {
-    try {
-    const {camId, uptRcId} = req.query;
-      const exists = await this.condoAdminQueries.CameraExist(camId, uptRcId);
-      res.json(exists).status(200);
+      const condoId = req.params.condoId;
+      const maxCars = await this.condoAdminQueries.getMaxCars(condoId);
+      res.json(maxCars).status(200);
     } catch (error) {
       console.log(error);
       res.sendStatus(500);
@@ -282,20 +256,24 @@ class CondoAdminRoutes {
   }
 
   async updateUnitHandler(req, res) {
+    console.log(req.body, "body");
     try {
       const unitId = req.params.unitId;
-      const carArr = [];
-      for (const key in req.body) {
-        if (key.startsWith("car_list")) {
-          carArr.push(req.body[key]);
-          delete req.body[key];
-        }
-      }
-      req.body.car_list = JSON.stringify(carArr);
-      const result = await this.condoAdminQueries.updateUnitById(
-        unitId,
-        req.body
-      );
+      const unit = req.body;
+      const result = await this.condoAdminQueries.updateUnitById(unitId, unit);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async updateCarHandler(req, res) {
+    console.log(req.body, "body");
+    try {
+      const carId = req.params.carId;
+      const car = req.body;
+      const result = await this.carHandler.updateCar(car, carId);
       res.json(result).status(200);
     } catch (error) {
       console.log(error);
@@ -337,6 +315,43 @@ class CondoAdminRoutes {
     }
   }
 
+  async createUserHandler(req, res) {
+    const created_by = req.body.userId ? req.body.userId : 1; // TODO: remove this line
+    try {
+      const user = req.body;
+      const result = await this.condoAdminQueries.createNewUser(
+        user,
+        created_by
+      );
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async createUnitHandler(req, res) {
+    try {
+      const unit = req.body;
+      const result = await this.condoAdminQueries.createNewUnit(unit);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async createCarHandler(req, res) {
+    try {
+      const car = req.body;
+      const result = await this.carHandler.createCar(car);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
   async deleteCondoHandler(req, res) {
     try {
       const condoId = req.params.condoId;
@@ -353,6 +368,51 @@ class CondoAdminRoutes {
     try {
       const lotId = req.params.lotId;
       const result = await this.condoAdminQueries.deleteLotById(lotId);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async deleteUnitHandler(req, res) {
+    try {
+      const unitId = req.params.unitId;
+      const result = await this.condoAdminQueries.deleteUnitById(unitId);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async deleteCarHandler(req, res) {
+    try {
+      const carId = req.params.carId;
+      const result = await this.carHandler.deleteCar(carId);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async deleteUserHandler(req, res) {
+    try {
+      const userId = req.params.userId;
+      console.log(req.params);
+      const result = await this.condoAdminQueries.deleteUserById(userId);
+      res.json(result).status(200);
+    } catch (error) {
+      console.log(error);
+      res.sendStatus(500);
+    }
+  }
+
+  async deleteCameraHandler(req, res) {
+    try {
+      const cameraId = req.params.cameraId;
+      const result = await this.condoAdminQueries.deleteCameraById(cameraId);
       res.json(result).status(200);
     } catch (error) {
       console.log(error);

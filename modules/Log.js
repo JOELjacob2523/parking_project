@@ -18,9 +18,19 @@ class Log {
    */
   async handelCameraLog() {
     try {
-      const isAllowed = await this.#seeIfCarIsAllowed();
+      console.log(this.log.plate_number, "plate_number");
+      console.log(this.log.direction, "direction");
+      const AllowedIdAndHasPic = await this.#IfCarIsAllowedID();
+      console.log(AllowedIdAndHasPic, "AllowedIdAndHasPic");
       //? if allowed insert log as archive
-      if (isAllowed) {
+      //? if has pic insert pic in unit_cars
+      if (AllowedIdAndHasPic && AllowedIdAndHasPic.car_id) {
+        if (AllowedIdAndHasPic.has_pic) {
+          this.webhookQueries.insertCarPicture(
+            this.log.vehicle_pic,
+            AllowedIdAndHasPic.car_id
+          );
+        }
         this.#setLogAsArchive();
         await this.#insertLog();
         return;
@@ -69,13 +79,12 @@ class Log {
    * This function is used to check if the car is allowed
    * @returns Boolean
    */
-  async #seeIfCarIsAllowed() {
+  async #IfCarIsAllowedID() {
     try {
       const carAllowed = await this.webhookQueries.seeIfCarAllowed(
         this.log.data_source_cam_id,
         this.log.plate_number
       );
-      console.log(carAllowed);
       return carAllowed;
     } catch (error) {
       console.log(error);
@@ -91,7 +100,7 @@ class Log {
     return {
       data_source_cam_id: this.webhook.camera_id,
       log_time: new Date(this.webhook.epoch_start),
-      plate_number: this.webhook.best_plate.plate,
+      plate_number: this.webhook.best_plate.plate.toLowerCase(),
       car_color: this.webhook.vehicle.color[0].name,
       car_make: this.webhook.vehicle.make[0].name,
       car_model: this.webhook.vehicle.make_model[0].name,

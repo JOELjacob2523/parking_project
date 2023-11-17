@@ -6,16 +6,28 @@ class WebhookQueries {
     return await this.db.knex("cameralogs").insert(log);
   }
 
+
   async seeIfCarAllowed(camId, plateNumber) {
     const hasUnit = await this.db
       .knex("units")
       .join("lots", "units.condo_id", "=", "lots.condo_id")
       .join("cameras", "lots.lot_id", "=", "cameras.lot_id")
+      .join("unit_cars", "units.unit_id", "=", "unit_cars.unit_id")
       .where("cameras.Data_source_camera_id", camId)
-      .where("units.car_list", "like", `%${plateNumber}%`)
-      .select(this.db.knex.raw("EXISTS(SELECT 1) AS has_unit"));
+      .where("unit_cars.plate_number", plateNumber)
+      .select(
+        "unit_cars.car_id",
+        this.db.knex.raw(`unit_cars.car_pic IS NOT NULL as has_pic`)
+      )
+      .first();
+    return hasUnit;
+  }
 
-    return hasUnit[0].has_unit;
+  async insertCarPicture(picture, carId) {
+    return await this.db
+      .knex("unit_cars")
+      .where("car_id", carId)
+      .update({ car_pic: picture });
   }
 
   async deleteLog(id) {

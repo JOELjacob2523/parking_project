@@ -47,6 +47,7 @@ class CondoAdminQueries {
         "users.username",
         "users.email",
         "users.phone_number_main",
+        "users.phone_number_2",
         "users.is_active",
         "users.user_role",
 
@@ -55,54 +56,6 @@ class CondoAdminQueries {
       .leftJoin("units", "users.user_id", "=", "units.user_id")
       .where({ "units.condo_id": condoId })
       .groupBy("users.user_id");
-  }
-
-  async getCondoIdAddressByAdminId(adminId) {
-    const res = await this.db
-      .knex("condos")
-      .select("condos.condo_id", "condos.condo_address")
-      .where({ condo_admin_id: adminId });
-
-    const arr = res.map((item) => {
-      return {
-        value: item.condo_id,
-        label: item.condo_address,
-      };
-    });
-
-    return arr;
-  }
-
-  async getUsersIdNameByCondoId(adminId) {
-    const res = await this.db
-      .knex("users")
-      .distinct("users.user_id", "users.username")
-      .join("units", "users.user_id", "=", "units.user_id")
-      .join("condos", "units.condo_id", "=", "condos.condo_id")
-      .where({ "condos.condo_admin_id": adminId });
-
-    const arr = res.map((item) => {
-      return {
-        value: item.user_id,
-        label: item.username,
-      };
-    });
-
-    return arr;
-  }
-
-  async CameraExist(id, uptRcId) {
-    console.log("id", id);
-    console.log("uptRcId", uptRcId);
-    let query = this.db.knex("cameras").where("Data_source_camera_id", id);
-
-    if (uptRcId !== undefined) {
-      query = query.whereNot("camera_id", uptRcId);
-    }
-
-    const result = await query.first();
-
-    return result !== undefined;
   }
 
   async getLogsByCondoId(condoId, archive = true) {
@@ -155,26 +108,55 @@ class CondoAdminQueries {
       );
   }
 
-  async getCarImageForLog(logId) {
-    return await this.db
-      .knex("cameralogs")
-      .where("log_id", logId)
-      .select("vehicle_pic");
-  }
-
-  async getPlateImageForLog(logId) {
-    return await this.db
-      .knex("cameralogs")
-      .where("log_id", logId)
-      .select("plate_pic");
-  }
-
   async getUnitsByCondoId(condoId) {
     return await this.db
       .knex("units")
-      .join("users", "units.user_id", "=", "users.user_id")
+      .leftJoin("users", "units.user_id", "=", "users.user_id")
       .where("condo_id", condoId)
       .select("units.*", "users.username");
+  }
+
+  async getCarsByUnitId(unitId) {
+    return await this.db
+      .knex("unit_cars")
+      .leftJoin(
+        "cameralogs",
+        "unit_cars.plate_number",
+        "cameralogs.plate_number"
+      )
+      .leftJoin(
+        "cameras",
+        "cameralogs.data_source_cam_id",
+        "cameras.Data_source_camera_id"
+      )
+      .leftJoin("lots", "cameras.lot_id", "lots.lot_id")
+      .where("unit_id", unitId)
+      .select(
+        "car_id",
+        "unit_cars.plate_number",
+        "unit_cars.car_make",
+        "unit_cars.car_model",
+        "unit_cars.car_color",
+        this.db.knex.raw("car_pic IS NOT NULL as has_pic"),
+        this.db.knex.raw("COALESCE(MAX(lots.locked), false) as locked")
+      )
+      .groupBy(
+        "car_id",
+        "unit_cars.plate_number",
+        "unit_cars.car_make",
+        "unit_cars.car_model",
+        "unit_cars.car_color",
+        "car_pic"
+      );
+  }
+
+  async getMaxCars(condoId) {
+    const [max_cars] = await this.db
+      .knex("condos")
+      .where("condo_id", condoId)
+      .select("max_cars");
+
+    return max_cars;
   }
 
   async updateLotById(lotId, lot) {
@@ -196,6 +178,7 @@ class CondoAdminQueries {
   }
 
   async updateUserById(userId, user) {
+    user.last_update = new Date();
     return await this.db.knex("users").where("user_id", userId).update(user);
   }
 
@@ -203,8 +186,48 @@ class CondoAdminQueries {
     return await this.db.knex("units").where("unit_id", unitId).update(unit);
   }
 
-  async createNewCondo(condo) {
-    return await this.db.knex("condos").insert(condo);
+  async updateCarById(carId, car) {
+    car.last_updated = new Date();
+    return await this.db.knex("unit_cars").where("car_id", carId).update(car);
+  }
+
+  async getLastLog(plateNumber) {
+    return await this.db
+      .knex("cameralogs")
+      .join(
+        "cameras",
+        "cameralogs.data_source_cam_id",
+        "cameras.Data_source_camera_id"
+      )
+      .join("lots", "cameras.lot_id", "lots.lot_id")
+      .where("plate_number", plateNumber)
+      .where("completion_state", false)
+      .orderBy("cameralogs.log_id", "desc")
+      .first(
+        "cameralogs.log_id",
+        "cameralogs.direction",
+        "cameralogs.archive",
+        "lots.lot_id",
+        "lots.locked"
+      );
+  }
+
+  async updateArciveLog(logId, status) {
+    console.log("logId", logId, "status", status);
+    return await this.db
+      .knex("cameralogs")
+      .where("log_id", logId)
+      .update({ archive: status });
+  }
+
+  async getPlateNumberForCar(carId) {
+    const [plate_number] = await this.db
+
+      .knex("unit_cars")
+      .where("car_id", carId)
+      .select("plate_number");
+
+    return plate_number;
   }
 
   async createNewLot(lot) {
@@ -213,6 +236,19 @@ class CondoAdminQueries {
 
   async createNewCamera(camera) {
     return await this.db.knex("cameras").insert(camera);
+  }
+
+  async createNewUser(user, createdBy) {
+    user.created_by = createdBy;
+    return await this.db.knex("users").insert(user);
+  }
+
+  async createNewCar(car) {
+    return await this.db.knex("unit_cars").insert(car);
+  }
+
+  async createNewUnit(unit) {
+    return await this.db.knex("units").insert(unit);
   }
 
   async deleteCondoById(condoId) {
@@ -272,6 +308,65 @@ class CondoAdminQueries {
       // Finally, delete the lot
       await trx("lots").where("lot_id", lotId).del();
     });
+  }
+
+  async deleteUnitById(unitId) {
+    return await this.db.knex.transaction(async (trx) => {
+      // Get all cars associated with the unit
+      const cars = await trx("unit_cars")
+        .where("unit_id", unitId)
+        .select("plate_number");
+
+      for (let car of cars) {
+        // Get the latest log for the car
+        const latestLog = await trx("cameralogs")
+          .where("plate_number", car.plate_number)
+          .orderBy("log_id", "desc")
+          .first();
+
+        // If the latest log is 'in', set 'archive' to false
+        if (latestLog && latestLog.direction === "In") {
+          await trx("cameralogs")
+            .where("log_id", latestLog.log_id)
+            .update({ archive: false });
+        }
+      }
+
+      // Delete all cars associated with the unit
+      await trx("unit_cars").where("unit_id", unitId).del();
+
+      // Delete the unit
+      await trx("units").where("unit_id", unitId).del();
+    });
+  }
+
+  async deleteUserById(userId) {
+    return await this.db.knex.transaction(async (trx) => {
+      // Update Units owner to null
+      await trx("units").where("user_id", userId).update({ user_id: null });
+
+      // Update towing_driver_id to null
+      await trx("condos")
+        .where("towing_driver_id", userId)
+        .update({ towing_driver_id: null });
+
+      // Finally, delete the user
+      await trx("users").where("user_id", userId).del();
+    });
+  }
+
+  async deleteCameraById(cameraId) {
+    return await this.db.knex.transaction(async (trx) => {
+      // Delete logs
+      await trx("cameralogs").where("data_source_cam_id", cameraId).del();
+
+      // Finally, delete the camera
+      await trx("cameras").where("camera_id", cameraId).del();
+    });
+  }
+
+  async deleteCar(carId) {
+    return await this.db.knex("unit_cars").where("car_id", carId).del();
   }
 }
 
