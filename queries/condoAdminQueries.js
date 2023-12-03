@@ -108,6 +108,34 @@ class CondoAdminQueries {
       );
   }
 
+  async getNotAllowedLogsByCondoId(condoId) {
+    return await this.db
+      .knex("cameralogs")
+      .join(
+        "cameras",
+        "cameralogs.data_source_cam_id",
+        "=",
+        "cameras.Data_source_camera_id"
+      )
+      .join("lots", "cameras.lot_id", "=", "lots.lot_id")
+      .where("lots.condo_id", condoId)
+      .where("cameralogs.Completion_state", false)
+      .where("cameralogs.archive", false)
+      .select(
+        "cameras.camera_id",
+        "cameras.lot_id",
+        "cameralogs.log_id",
+        "cameralogs.log_time",
+        "cameralogs.plate_number",
+        "cameralogs.car_color",
+        "cameralogs.car_make",
+        "cameralogs.car_model",
+        "cameralogs.car_type",
+        "cameralogs.car_year",
+        "lots.lot_id" // Added this line to retrieve the lot_id
+      );
+  }
+
   async getUnitsByCondoId(condoId) {
     return await this.db
       .knex("units")
@@ -249,6 +277,10 @@ class CondoAdminQueries {
 
   async createNewUnit(unit) {
     return await this.db.knex("units").insert(unit);
+  }
+
+  async createNewCondo(condo) {
+    return await this.db.knex("condos").insert(condo);
   }
 
   async deleteCondoById(condoId) {

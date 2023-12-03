@@ -17,7 +17,7 @@ class AuthQueries {
       .select("password");
     return user.password == null;
   }
-  
+
   async setPasswordInDB(email, password) {
     return await this.db
       .knex("users")
@@ -39,17 +39,25 @@ class AuthQueries {
   }
 
   async setOTPInDB(email, otp) {
-    await this.db.knex("users").where({ email }).update({ otp });
-    return;
+    const now = this.db.knex.fn.now();
+    return await this.db
+      .knex("users")
+      .where({ email })
+      .update({ otp, otp_created_at: now });
   }
 
   async getOTPFromDB(email) {
-    const [user] = await this.db.knex("users").where({ email }).select("otp");
-    return user.otp;
+    return await this.db
+      .knex("users")
+      .where({ email })
+      .select("otp", "otp_created_at");
   }
 
   async removeOTPFromDB(email) {
-    await this.db.knex("users").where({ email }).update({ otp: null });
+    await this.db
+      .knex("users")
+      .where({ email })
+      .update({ otp: null, otp_created_at: null });
     return;
   }
 }

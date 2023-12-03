@@ -15,7 +15,10 @@ class CondoAdminRoutes {
     // All Get Routes
     this.router.get("/get/condos", this.getCondoByAdminId.bind(this));
     this.router.get("/get/cameras/:lotId", this.getCamerasByLotId.bind(this));
-    this.router.get("/get/logs/:lotId", this.getLogsByLotIdHandler.bind(this));
+    this.router.get(
+      "/get/logs/:condoId",
+      this.getLogsBycondoIdHandler.bind(this)
+    );
     this.router.get("/get/cars/:unitId", this.getCarsByUnitId.bind(this));
     this.router.get(
       "/get/units/:condoId",
@@ -81,7 +84,7 @@ class CondoAdminRoutes {
 
   async getCondoByAdminId(req, res) {
     try {
-      const adminId = req.body.adminId ? req.body.adminId : 1; // TODO: remove this line
+      const adminId = req.userId;
       let condos = await this.condoAdminQueries.getCondoByAdminId(adminId);
       res.json(condos).status(200);
     } catch (error) {
@@ -141,10 +144,13 @@ class CondoAdminRoutes {
     }
   }
 
-  async getLogsByLotIdHandler(req, res) {
+  async getLogsBycondoIdHandler(req, res) {
+    console.log(req);
     try {
-      const lotId = req.params.lotId;
-      const logs = await this.condoAdminQueries.getNotAllowedLogsByLotId(lotId);
+      const condoId = req.params.condoId;
+      const logs = await this.condoAdminQueries.getNotAllowedLogsByCondoId(
+        condoId
+      );
       res.json(logs).status(200);
     } catch (error) {
       console.log(error);
@@ -203,6 +209,7 @@ class CondoAdminRoutes {
 
   async updateLotHandler(req, res) {
     try {
+      console.log(req.body);
       const lotId = req.params.lotId;
       const lot = req.body;
       const result = await this.condoAdminQueries.updateLotById(lotId, lot);
@@ -331,6 +338,7 @@ class CondoAdminRoutes {
   }
 
   async createUnitHandler(req, res) {
+    console.log(req.body);
     try {
       const unit = req.body;
       const result = await this.condoAdminQueries.createNewUnit(unit);

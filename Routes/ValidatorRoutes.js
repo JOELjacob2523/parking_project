@@ -53,8 +53,9 @@ class ValidatorRoutes {
   async plateLockedValidator(req, res) {
     try {
       const plate = req.params.plate;
-      const lastLog = await this.ValidatorQueries.isCarInLockedLot(plate);
-      res.json(lastLog).status(200);
+      const Locked = await this.ValidatorQueries.isCarInLockedLot(plate);
+      console.log(Locked, "lastLog");
+      res.json(Locked).status(200);
     } catch (error) {
       console.log(error);
       res.sendStatus(500);

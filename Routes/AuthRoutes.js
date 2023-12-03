@@ -108,7 +108,7 @@ class AuthRoutes {
       res.json(token).status(200);
     } catch (error) {
       console.log(error.message);
-      if (error.message == "Invalid OTP") {
+      if (error.message == "Invalid OTP" || error.message == "OTP expired") {
         return res.status(400).json({ message: error.message });
       }
       res.sendStatus(500);
