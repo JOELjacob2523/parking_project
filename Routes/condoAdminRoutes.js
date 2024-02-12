@@ -94,7 +94,6 @@ class CondoAdminRoutes {
   }
 
   async getLotsByCondoIdHandler(req, res) {
-    console.log(req.params.condoId);
     try {
       const lots = await this.condoAdminQueries.getLotsByCondoId(
         req.params.condoId
@@ -107,7 +106,6 @@ class CondoAdminRoutes {
   }
 
   async getCamerasByLotId(req, res) {
-    console.log(req.params.lotId);
     try {
       const cameras = await this.condoAdminQueries.getCamerasByLotId(
         req.params.lotId
@@ -145,7 +143,6 @@ class CondoAdminRoutes {
   }
 
   async getLogsBycondoIdHandler(req, res) {
-    console.log(req);
     try {
       const condoId = req.params.condoId;
       const logs = await this.condoAdminQueries.getNotAllowedLogsByCondoId(
@@ -163,7 +160,6 @@ class CondoAdminRoutes {
       const units = await this.condoAdminQueries.getUnitsByCondoId(
         req.params.condoId
       );
-      console.log(units);
       res.json(units).status(200);
     } catch (error) {
       console.log(error);
@@ -176,7 +172,6 @@ class CondoAdminRoutes {
       const cars = await this.condoAdminQueries.getCarsByUnitId(
         req.params.unitId
       );
-      console.log(cars);
       res.json(cars).status(200);
     } catch (error) {
       console.log(error);
@@ -209,7 +204,6 @@ class CondoAdminRoutes {
 
   async updateLotHandler(req, res) {
     try {
-      console.log(req.body);
       const lotId = req.params.lotId;
       const lot = req.body;
       const result = await this.condoAdminQueries.updateLotById(lotId, lot);
@@ -263,7 +257,6 @@ class CondoAdminRoutes {
   }
 
   async updateUnitHandler(req, res) {
-    console.log(req.body, "body");
     try {
       const unitId = req.params.unitId;
       const unit = req.body;
@@ -276,7 +269,6 @@ class CondoAdminRoutes {
   }
 
   async updateCarHandler(req, res) {
-    console.log(req.body, "body");
     try {
       const carId = req.params.carId;
       const car = req.body;
@@ -300,7 +292,6 @@ class CondoAdminRoutes {
   }
 
   async createLotHandler(req, res) {
-    console.log(req.body);
     try {
       const lot = req.body;
       const result = await this.condoAdminQueries.createNewLot(lot);
@@ -338,7 +329,6 @@ class CondoAdminRoutes {
   }
 
   async createUnitHandler(req, res) {
-    console.log(req.body);
     try {
       const unit = req.body;
       const result = await this.condoAdminQueries.createNewUnit(unit);
@@ -363,7 +353,6 @@ class CondoAdminRoutes {
   async deleteCondoHandler(req, res) {
     try {
       const condoId = req.params.condoId;
-      console.log(condoId);
       const result = await this.condoAdminQueries.deleteCondoById(condoId);
       res.json(result).status(200);
     } catch (error) {
@@ -408,7 +397,6 @@ class CondoAdminRoutes {
   async deleteUserHandler(req, res) {
     try {
       const userId = req.params.userId;
-      console.log(req.params);
       const result = await this.condoAdminQueries.deleteUserById(userId);
       res.json(result).status(200);
     } catch (error) {

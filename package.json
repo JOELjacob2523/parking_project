@@ -5,7 +5,7 @@
   "type": "module",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "nodemon --ignore parking_client/ server.js",
     "test": "jest --config=jest.config.json"
   },
   "author": "",

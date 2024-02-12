@@ -18,20 +18,16 @@ class CarHandler {
   async updateCar(car, carId) {
     try {
       const oldPlate = await this.condoAdminQueries.getPlateNumberForCar(carId);
-      console.log(oldPlate, "oldPlate");
 
       let lastLog = await this.condoAdminQueries.getLastLog(
         oldPlate.plate_number
       );
-      console.log(lastLog, "lastLog");
       if (lastLog && lastLog.archive && lastLog.direction === "In") {
-        console.log("here");
         await this.condoAdminQueries.updateArciveLog(lastLog.log_id, false);
       }
 
       const newPlate = car.plate_number;
       lastLog = await this.condoAdminQueries.getLastLog(newPlate);
-      console.log(lastLog, "lastLog 24");
       if (lastLog && !lastLog.locked && lastLog.direction === "In") {
         await this.condoAdminQueries.updateArciveLog(lastLog.log_id, true);
       } else if (lastLog && lastLog.locked && lastLog.direction === "In") {
@@ -54,7 +50,6 @@ class CarHandler {
   async createCar(car) {
     try {
       const lastLog = await this.condoAdminQueries.getLastLog(car.plate_number);
-      console.log(lastLog, "lastLog");
 
       if (lastLog && !lastLog.locked && lastLog.direction === "In") {
         await this.condoAdminQueries.updateArciveLog(lastLog.log_id, true);

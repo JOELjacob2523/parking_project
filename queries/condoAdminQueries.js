@@ -241,7 +241,6 @@ class CondoAdminQueries {
   }
 
   async updateArciveLog(logId, status) {
-    console.log("logId", logId, "status", status);
     return await this.db
       .knex("cameralogs")
       .where("log_id", logId)

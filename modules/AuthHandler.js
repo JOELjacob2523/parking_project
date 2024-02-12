@@ -35,7 +35,6 @@ class AuthHandler {
       const { email, reset } = this.jwt.verifyToken(token);
 
       const passwordIsNull = await this.AuthQueries.seeIfPasswordIsNull(email);
-      console.log(passwordIsNull, "passwordIsNull");
       if (!passwordIsNull && !reset) throw new Error("password already set");
       const hashedPassword = await this.passwordManager.hashPassword(password);
       await this.AuthQueries.setPasswordInDB(email, hashedPassword);
@@ -53,7 +52,6 @@ class AuthHandler {
 
       if (!user) throw new Error("user");
       if (user.password === null) throw new Error("pas not set");
-      console.log(user);
       const psswordMatch = await this.passwordManager.comparePassword(
         password,
         user.password
@@ -104,15 +102,12 @@ class AuthHandler {
 
   async verifyOTP(email, otp) {
     const storedOTP = await this.AuthQueries.getOTPFromDB(email);
-    console.log(storedOTP, "storedOTP");
-    console.log(storedOTP[0], "storedOTP[0]");
     if (!storedOTP || otp !== storedOTP[0].otp) throw new Error("Invalid OTP");
 
     if (
       new Date(storedOTP[0].otp_created_at).getTime() <
       Date.now() - 5 * 60 * 1000
     ) {
-      console.log("OTP expired");
       await this.AuthQueries.removeOTPFromDB(email);
       throw new Error("OTP expired");
     }

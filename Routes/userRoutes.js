@@ -67,10 +67,8 @@ class UserRoutes {
   }
 
   async #updateUnitPlateList(req, res) {
-    console.log("update plate list");
     try {
       const plateList = req.body;
-      console.log(plateList, "from userRoutes.js");
       const unitId = Number(req.params.unitId);
       await this.userQueries.updateUnitPlateList(unitId, plateList);
       res.sendStatus(200);

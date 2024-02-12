@@ -6,7 +6,6 @@ class ValidatorQueries {
   }
 
   async EmailExist(email, uptRcId) {
-    console.log("email", email, "uptRcId", uptRcId);
     let query = this.db.knex("users").where("email", email);
 
     if (uptRcId !== undefined) {
@@ -14,13 +13,11 @@ class ValidatorQueries {
     }
 
     const result = await query.first();
-    console.log("result", result);
 
     return result !== undefined;
   }
 
   async PhoneExist(phone, uptRcId) {
-    console.log("phone", phone, "uptRcId", uptRcId);
     let query = this.db.knex("users").where(function () {
       this.where("phone_number_main", phone).orWhere("phone_number_2", phone);
     });
@@ -30,7 +27,6 @@ class ValidatorQueries {
     }
 
     const result = await query.first();
-    console.log("result", result);
 
     return result !== undefined;
   }
@@ -52,7 +48,6 @@ class ValidatorQueries {
           "lots.locked AND cameralogs.direction = 'In' as in_locked_lot"
         )
       );
-    console.log(result);
     return result[0] ? result[0].in_locked_lot : 0;
   }
 

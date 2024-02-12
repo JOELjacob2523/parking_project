@@ -15,7 +15,6 @@ class Email {
   }
 
   async sendEmail(email, subject, body) {
-    console.log(email);
     try {
       await this.transporter.sendMail({
         from: this.emailAddress,

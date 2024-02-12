@@ -54,7 +54,6 @@ class ValidatorRoutes {
     try {
       const plate = req.params.plate;
       const Locked = await this.ValidatorQueries.isCarInLockedLot(plate);
-      console.log(Locked, "lastLog");
       res.json(Locked).status(200);
     } catch (error) {
       console.log(error);

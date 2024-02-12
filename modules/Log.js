@@ -1,5 +1,8 @@
 import Database from "../controllers/db.js";
 import WebhookQueries from "../queries/webhookQueries.js";
+import * as fs from "fs";
+import { fileURLToPath } from "url";
+import path, { dirname } from "path";
 
 /**
  * This class is representing a the OPENALPR webhook POST request
@@ -11,6 +14,8 @@ class Log {
     this.webhookQueries = new WebhookQueries(this.db);
     this.webhook = webhook;
     this.log = this.#formattedLog();
+    this.__Dirname = dirname(fileURLToPath(import.meta.url));
+    this.picFolder = "pics";
   }
 
   /**
@@ -18,10 +23,7 @@ class Log {
    */
   async handelCameraLog() {
     try {
-      console.log(this.log.plate_number, "plate_number");
-      console.log(this.log.direction, "direction");
       const AllowedIdAndHasPic = await this.#IfCarIsAllowedID();
-      console.log(AllowedIdAndHasPic, "AllowedIdAndHasPic");
       //? if allowed insert log as archive
       //? if has pic insert pic in unit_cars
       if (AllowedIdAndHasPic && AllowedIdAndHasPic.car_id) {
@@ -71,7 +73,6 @@ class Log {
       throw new Error(error);
     } finally {
       this.db.close();
-      console.log("db closed");
     }
   }
 
@@ -125,10 +126,45 @@ class Log {
   }
 
   /**
+   * Handles the saving of vehicle and plate pictures for the log entry.
+   */
+  handelPics() {
+    const filePath = path.join(this.__Dirname, this.picFolder);
+    let carImagePath = path.join(
+      this.picFolder,
+      `car${this.log.plate_number}${Date.now()}.jpg`
+    );
+    let plateImagePath = path.join(
+      this.picFolder,
+      `plate${this.log.plate_number}${Date.now()}.jpg`
+    );
+    if (!fs.existsSync(filePath)) {
+      fs.mkdirSync(filePath);
+    }
+
+    if (this.log.vehicle_pic) {
+      fs.writeFileSync(
+        path.join(this.__Dirname, carImagePath),
+        this.log.vehicle_pic
+      );
+    }
+
+    if (this.log.plate_pic) {
+      fs.writeFileSync(
+        path.join(this.__Dirname, plateImagePath),
+        this.log.plate_pic
+      );
+    }
+
+    this.log.vehicle_pic = carImagePath;
+    this.log.plate_pic = plateImagePath;
+  }
+  /**
    * This function is used to insert the log into the database
    */
   async #insertLog() {
     try {
+      this.handelPics();
       await this.webhookQueries.insertCameraLog(this.log);
     } catch (error) {
       console.log(error);

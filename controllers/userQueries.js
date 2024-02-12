@@ -22,17 +22,13 @@ class UserQueries {
   }
 
   async updateUserProfile(userId, user) {
-    console.log(user);
     const updateDate = new Date();
     user.last_update = updateDate;
-    console.log(user);
     return await this.db.knex("users").where({ user_id: userId }).update(user);
   }
 
   async updateUnitPlateList(unitId, plateList) {
-    console.log(plateList);
     const list = JSON.stringify(plateList);
-    console.log(list);
     return await this.db.knex("units")
       .where({ unit_id: unitId })
       .update({ car_list: list });

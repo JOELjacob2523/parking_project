@@ -32,7 +32,6 @@ class AuthRoutes {
 
   async setPassword(req, res) {
     try {
-      console.log(req.body);
       const { token, pass } = req.body;
       await this.AuthHandler.setPasswordHandler(token, pass);
       res.sendStatus(200);
@@ -49,13 +48,11 @@ class AuthRoutes {
   async login(req, res) {
     try {
       const { email, password, remember } = req.body;
-      console.log(req.body);
       const { token, user_role } = await this.AuthHandler.loginHandler(
         email,
         password,
         remember
       );
-      console.log(user_role);
       res.setHeader("token", token);
       res.cookie("token", token, { httpOnly: true, sameSite: "strict" });
       res.status(200).json({ message: "success", user_role });
@@ -69,14 +66,11 @@ class AuthRoutes {
       ) {
         return res.status(400).json({ message: err.message });
       }
-
-      console.log(err);
       res.sendStatus(500);
     }
   }
 
   async logout(req, res) {
-    console.log("logout");
     try {
       res.clearCookie("token");
       res.sendStatus(200);
@@ -87,7 +81,6 @@ class AuthRoutes {
   }
 
   async getOtp(req, res) {
-    console.log(req.query.email, "email");
     try {
       let email = req.query.email.trim().toLowerCase();
       const otp = await this.AuthHandler.generateOTP(email);
