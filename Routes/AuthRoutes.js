@@ -19,7 +19,7 @@ class AuthRoutes {
   }
 
   async register(req, res) {
-    const created_by = req.userId ? req.userId : 1; // TODO: remove this line
+    const created_by = req.userId ? req.userId : 30; // TODO: remove this line
     try {
       const user = req.body;
       const result = await this.AuthHandler.registerHandler(user, created_by);

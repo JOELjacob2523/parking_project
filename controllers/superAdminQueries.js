@@ -25,17 +25,24 @@ class SuperAdminRoutes {
   }
 
   async getMaxCarsOfCondo(condoId) {
-    return await this.db.knex("condos").select("max_cars").where({ condo_id: condoId });
+    return await this.db
+      .knex("condos")
+      .select("max_cars")
+      .where({ condo_id: condoId });
   }
 
   async getCondos() {
-    return await this.db.knex("condos")
+    return await this.db
+      .knex("condos")
       .join("users", "condos.condo_admin_id", "=", "users.user_id")
       .select("condos.*", "users.username as condo_admin_username");
   }
 
   async getCondoById(condoId) {
-    return await this.db.knex("condos").select("*").where({ condo_id: condoId });
+    return await this.db
+      .knex("condos")
+      .select("*")
+      .where({ condo_id: condoId });
   }
 
   async getLotsByCondoId(condoId) {
@@ -55,7 +62,8 @@ class SuperAdminRoutes {
   }
 
   async getCondoUsers(condoId) {
-    return await this.db.knex("users")
+    return await this.db
+      .knex("users")
       .join("units", "users.user_id", "=", "units.user_id")
       .join("condos", "units.condo_id", "=", "condos.condo_id")
       .where("condos.condo_id", condoId)
@@ -72,14 +80,16 @@ class SuperAdminRoutes {
   }
 
   async getAllLogs() {
-    return await this.db.knex("cameralogs")
+    return await this.db
+      .knex("cameralogs")
       .where("completion_state", false)
       .where("archive", true)
       .select("*");
   }
 
   async getLogsByCondoId(condoId, archive = true) {
-    return await this.db.knex("cameralogs")
+    return await this.db
+      .knex("cameralogs")
       .join(
         "cameras",
         "cameralogs.data_source_cam_id",
